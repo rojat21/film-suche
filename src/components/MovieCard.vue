@@ -8,15 +8,16 @@
       />
       <div class="overlay">
         <p class="overview">{{ movie.Year }}</p>
-        <span
-          v-if="movie.Genre"
-          v-for="genre in movie.Genre.split(',')"
-          :key="genre"
-          class="genre-badge"
-          :style="{ backgroundColor: genreColor(genre.trim()) }"
-        >
-          {{ genre.trim() }}
-        </span>
+        <template v-if="movie.Genre">
+          <span
+            v-for="genre in movie.Genre.split(',')"
+            :key="genre"
+            class="genre-badge"
+            :style="{ backgroundColor: genreColor(genre.trim()) }"
+          >
+            {{ genre.trim() }}
+          </span>
+        </template>
       </div>
     </div>
     <div class="movie-info">
