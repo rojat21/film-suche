@@ -148,7 +148,7 @@ export default {
   background-size: cover;
   background-position: center;
   filter: blur(20px) brightness(0.3);
-  z-index: 0;
+  z-index: -1;
 }
 .content {
   position: relative;
