@@ -73,7 +73,7 @@ export default {
       ]
       const results = []
       for (const title of titles) {
-        const res = await fetch(`https://www.omdbapi.com/?t=${title}&apikey=${API_KEY}`)
+        const res = await fetch('https://www.omdbapi.com/?t=' + title + '&apikey=' + API_KEY)
         const data = await res.json()
         if (data.Response === 'True') results.push(data)
       }
@@ -81,7 +81,7 @@ export default {
     },
     async searchMovies() {
       if (!this.searchQuery) return
-      const res = await fetch(`https://www.omdbapi.com/?s=${this.searchQuery}&apikey=${API_KEY}`)
+      const res = await fetch('https://www.omdbapi.com/?s=' + this.searchQuery + '&apikey=' + API_KEY)
       const data = await res.json()
       if (data.Response === 'True') {
         this.searchResults = data.Search
@@ -90,10 +90,14 @@ export default {
         alert('Keine Filme gefunden!')
       }
     },
-    randomMovie() {
+    async randomMovie() {
       const titles = ['Avengers', 'Inception', 'Interstellar', 'Batman', 'Joker', 'Matrix', 'Titanic', 'Avatar']
       const random = titles[Math.floor(Math.random() * titles.length)]
-      this.$router.push('/detail/' + random)
+      const res = await fetch('https://www.omdbapi.com/?t=' + random + '&apikey=' + API_KEY)
+      const data = await res.json()
+      if (data.Response === 'True') {
+        this.$router.push('/detail/' + data.imdbID)
+      }
     }
   }
 }
