@@ -52,31 +52,28 @@ export default {
   methods: {
     async loadPopularMovies() {
       const titles = [
-  'Avengers', 'Inception', 'Interstellar', 'Batman', 'Spider-Man', 'Iron Man',
-  'Joker', 'Matrix', 'Titanic', 'Avatar', 'Gladiator', 'The Dark Knight',
-  'Pulp Fiction', 'Forrest Gump', 'The Lion King', 'Toy Story', 'Harry Potter',
-  'Lord of the Rings', 'Fast and Furious', 'Mission Impossible', 'Shrek',
-  'Finding Nemo', 'Up', 'Wall-E', 'Coco', 'Frozen', 'Moana', 'Zootopia',
-  'Inside Out', 'Brave', 'Ratatouille', 'Cars', 'Monsters Inc', 'A Bug Life',
-  'Mulan', 'Aladdin', 'Pocahontas', 'Tarzan', 'Hercules', 'Cinderella',
-  'Sleeping Beauty', 'Snow White', 'Beauty and the Beast', 'The Little Mermaid',
-  'Pinocchio', 'Bambi', 'Dumbo', 'Fantasia', 'Peter Pan',
-  'Goodfellas', 'The Godfather', 'Scarface', 'Casino', 'Taxi Driver',
-  'Fight Club', 'Se7en', 'Silence of the Lambs', 'American Psycho', 'Gone Girl',
-  'Shutter Island', 'Memento', 'Prestige', 'Donnie Darko', 'Black Swan',
-  'Whiplash', 'La La Land', 'Parasite', 'Oldboy', 'Train to Busan',
-  'Your Name', 'Spirited Away', 'Princess Mononoke', 'Howls Moving Castle',
-  'Nausicaa', 'Akira', 'Ghost in the Shell', 'Evangelion',
-  'Terminator', 'Alien', 'Aliens', 'Predator', 'RoboCop',
-  'Total Recall', 'Blade Runner', 'Tron', 'ET', 'Jurassic Park',
-  'Jaws', 'Back to the Future', 'Indiana Jones', 'Star Wars', 'Superman',
-  'Wonder Woman', 'Aquaman', 'Black Panther', 'Thor', 'Captain America',
-  'Doctor Strange', 'Guardians of the Galaxy', 'Ant-Man', 'Deadpool', 'Logan',
-  'X-Men', 'Wolverine', 'Venom', 'Morbius', 'Dune'
-]
+        'Avengers', 'Inception', 'Interstellar', 'Batman', 'Spider-Man', 'Iron Man',
+        'Joker', 'Matrix', 'Titanic', 'Avatar', 'Gladiator', 'The Dark Knight',
+        'Pulp Fiction', 'Forrest Gump', 'The Lion King', 'Toy Story', 'Harry Potter',
+        'Lord of the Rings', 'Fast and Furious', 'Mission Impossible', 'Shrek',
+        'Finding Nemo', 'Up', 'Wall-E', 'Coco', 'Frozen', 'Moana', 'Zootopia',
+        'Inside Out', 'Brave', 'Ratatouille', 'Cars', 'Monsters Inc', 'Mulan',
+        'Aladdin', 'Hercules', 'Cinderella', 'Beauty and the Beast',
+        'Goodfellas', 'The Godfather', 'Scarface', 'Casino', 'Taxi Driver',
+        'Fight Club', 'Se7en', 'Silence of the Lambs', 'American Psycho', 'Gone Girl',
+        'Shutter Island', 'Memento', 'Prestige', 'Donnie Darko', 'Black Swan',
+        'Whiplash', 'La La Land', 'Parasite', 'Oldboy', 'Train to Busan',
+        'Spirited Away', 'Princess Mononoke', 'Akira',
+        'Terminator', 'Alien', 'Predator', 'RoboCop',
+        'Total Recall', 'Blade Runner', 'ET', 'Jurassic Park',
+        'Jaws', 'Back to the Future', 'Indiana Jones', 'Star Wars', 'Superman',
+        'Wonder Woman', 'Aquaman', 'Black Panther', 'Thor', 'Captain America',
+        'Doctor Strange', 'Guardians of the Galaxy', 'Ant-Man', 'Deadpool', 'Logan',
+        'X-Men', 'Venom', 'Dune'
+      ]
       const results = []
       for (const title of titles) {
-        const res = await fetch(`https://www.omdbapi.com/?t=${title}&apikey=${API_KEY}`)
+        const res = await fetch('https://www.omdbapi.com/?t=' + title + '&apikey=' + API_KEY)
         const data = await res.json()
         if (data.Response === 'True') results.push(data)
       }
@@ -84,7 +81,7 @@ export default {
     },
     async searchMovies() {
       if (!this.searchQuery) return
-      const res = await fetch(`https://www.omdbapi.com/?s=${this.searchQuery}&apikey=${API_KEY}`)
+      const res = await fetch('https://www.omdbapi.com/?s=' + this.searchQuery + '&apikey=' + API_KEY)
       const data = await res.json()
       if (data.Response === 'True') {
         this.searchResults = data.Search
@@ -93,10 +90,14 @@ export default {
         alert('Keine Filme gefunden!')
       }
     },
-    randomMovie() {
+    async randomMovie() {
       const titles = ['Avengers', 'Inception', 'Interstellar', 'Batman', 'Joker', 'Matrix', 'Titanic', 'Avatar']
       const random = titles[Math.floor(Math.random() * titles.length)]
-      this.$router.push('/detail/' + random)
+      const res = await fetch('https://www.omdbapi.com/?t=' + random + '&apikey=' + API_KEY)
+      const data = await res.json()
+      if (data.Response === 'True') {
+        this.$router.push('/detail/' + data.imdbID)
+      }
     }
   }
 }

@@ -1,62 +1,68 @@
 <template>
-<div class="detail" v-if="movie">
-<div class="backdrop" :style="{ backgroundImage: `url(${movie.Poster})` }"></div>
-<div class="content">
-<div class="poster-section">
-<img :src="movie.Poster" :alt="movie.Title" class="poster" />
-<div class="action-buttons">
-<button @click="toggleFavorit" :class="['btn', isFavorit ? 'btn-active' : '']">
+  <div class="detail" v-if="movie">
+    <div
+      class="backdrop"
+      :style="movie.Poster && movie.Poster !== 'N/A' ? { backgroundImage: 'url(' + movie.Poster + ')' } : {}"
+    ></div>
+    <div class="content">
+      <div class="poster-section">
+        <img
+          :src="movie.Poster && movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/280x420?text=Kein+Bild'"
+          :alt="movie.Title"
+          class="poster"
+        />
+        <div class="action-buttons">
+          <button @click="toggleFavorit" :class="['btn', isFavorit ? 'btn-active' : '']">
             ⭐ {{ isFavorit ? 'Aus Favoriten' : 'Favoriten' }}
-</button>
-<button @click="toggleWatchlist" :class="['btn', isWatchlist ? 'btn-active' : '']">
+          </button>
+          <button @click="toggleWatchlist" :class="['btn', isWatchlist ? 'btn-active' : '']">
             📋 {{ isWatchlist ? 'Aus Watchlist' : 'Watchlist' }}
-</button>
-<a :href="`https://www.youtube.com/results?search_query=${movie.Title}+trailer`"
-            target="_blank" class="btn btn-trailer">
+          </button>
+          <button @click="openTrailer" class="btn btn-trailer">
             ▶ Trailer
-</a>
-</div>
-</div>
-<div class="info-section">
-<h1>{{ movie.Title }}</h1>
-<div class="meta">
-<span class="year">{{ movie.Year }}</span>
-<span class="runtime">{{ movie.Runtime }}</span>
-<span class="rated">{{ movie.Rated }}</span>
-</div>
-<div class="genres">
-<span
+          </button>
+        </div>
+      </div>
+      <div class="info-section">
+        <h1>{{ movie.Title }}</h1>
+        <div class="meta">
+          <span class="year">{{ movie.Year }}</span>
+          <span class="runtime">{{ movie.Runtime }}</span>
+          <span class="rated">{{ movie.Rated }}</span>
+        </div>
+        <div class="genres">
+          <span
             v-for="genre in movie.Genre ? movie.Genre.split(',') : []"
             :key="genre"
             class="genre-badge"
             :style="{ backgroundColor: genreColor(genre.trim()) }"
->
+          >
             {{ genre.trim() }}
-</span>
-</div>
-<div class="rating">
-<div class="stars">
-<span
+          </span>
+        </div>
+        <div class="rating">
+          <div class="stars">
+            <span
               v-for="n in 10"
               :key="n"
               :class="['star', n <= Math.round(parseFloat(movie.imdbRating)) ? 'filled' : '']"
->★</span>
-</div>
-<p class="rating-text">{{ movie.imdbRating }} / 10 (IMDb)</p>
-</div>
-<p class="plot">{{ movie.Plot }}</p>
-<div class="extra-info">
-<p><strong>Regisseur:</strong> {{ movie.Director }}</p>
-<p><strong>Schauspieler:</strong> {{ movie.Actors }}</p>
-<p><strong>Land:</strong> {{ movie.Country }}</p>
-<p><strong>Sprache:</strong> {{ movie.Language }}</p>
-</div>
-</div>
-</div>
-</div>
-<div v-else class="loading">
-<p>Film wird geladen...</p>
-</div>
+            >★</span>
+          </div>
+          <p class="rating-text">{{ movie.imdbRating }} / 10 (IMDb)</p>
+        </div>
+        <p class="plot">{{ movie.Plot }}</p>
+        <div class="extra-info">
+          <p><strong>Regisseur:</strong> {{ movie.Director }}</p>
+          <p><strong>Schauspieler:</strong> {{ movie.Actors }}</p>
+          <p><strong>Land:</strong> {{ movie.Country }}</p>
+          <p><strong>Sprache:</strong> {{ movie.Language }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div v-else class="loading">
+    <p>Film wird geladen...</p>
+  </div>
 </template>
  
 <script>
@@ -77,7 +83,7 @@ export default {
   methods: {
     async loadMovie() {
       const id = this.$route.params.id
-      const res = await fetch(`https://www.omdbapi.com/?i=${id}&apikey=${API_KEY}`)
+      const res = await fetch('https://www.omdbapi.com/?i=' + id + '&apikey=' + API_KEY)
       const data = await res.json()
       if (data.Response === 'True') {
         this.movie = data
@@ -110,11 +116,19 @@ export default {
       localStorage.setItem('watchlist', JSON.stringify(watchlist))
       this.isWatchlist = !this.isWatchlist
     },
+    openTrailer() {
+      window.open('https://www.youtube.com/results?search_query=' + this.movie.Title + '+trailer', '_blank')
+    },
     genreColor(genre) {
       const colors = {
-        Action: '#e50914', Comedy: '#f5a623', Horror: '#7b2d8b',
-        Romance: '#ff69b4', Drama: '#1a73e8', Thriller: '#2ecc71',
-        Animation: '#ff9800', Documentary: '#607d8b'
+        Action: '#e50914',
+        Comedy: '#f5a623',
+        Horror: '#7b2d8b',
+        Romance: '#ff69b4',
+        Drama: '#1a73e8',
+        Thriller: '#2ecc71',
+        Animation: '#ff9800',
+        Documentary: '#607d8b'
       }
       return colors[genre] || '#555'
     }
@@ -134,7 +148,7 @@ export default {
   background-size: cover;
   background-position: center;
   filter: blur(20px) brightness(0.3);
-  z-index: 0;
+  z-index: -1;
 }
 .content {
   position: relative;
