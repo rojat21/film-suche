@@ -100,6 +100,33 @@
 </div>
 </div>
  
+    <!-- Ähnliche Filme -->
+<div class="similar-section" v-if="similarMovies.length > 0">
+<h2 class="section-title">🎬 Ähnliche Filme</h2>
+<div class="similar-grid">
+<div
+
+          v-for="similar in similarMovies"
+
+          :key="similar.imdbID"
+
+          class="similar-card"
+
+          @click="goToMovie(similar.imdbID)"
+>
+<img
+
+            :src="similar.Poster && similar.Poster !== 'N/A' ? similar.Poster : 'https://via.placeholder.com/150x220?text=Kein+Bild'"
+
+            :alt="similar.Title"
+
+          />
+<p>{{ similar.Title }}</p>
+<p class="similar-year">{{ similar.Year }}</p>
+</div>
+</div>
+</div>
+ 
     <!-- Share Popup -->
 <div v-if="showSharePopup" class="share-popup">
 <p>🔗 Link kopiert!</p>
@@ -130,6 +157,8 @@ export default {
 
       ownRating: 0,
 
+      similarMovies: [],
+
       showSharePopup: false
 
     }
@@ -139,6 +168,20 @@ export default {
   mounted() {
 
     this.loadMovie()
+
+  },
+
+  watch: {
+
+    '$route.params.id'() {
+
+      this.movie = null
+
+      this.similarMovies = []
+
+      this.loadMovie()
+
+    }
 
   },
 
@@ -159,6 +202,26 @@ export default {
         this.checkLists()
 
         this.loadOwnRating()
+
+        this.loadSimilarMovies()
+
+      }
+
+    },
+
+    async loadSimilarMovies() {
+
+      if (!this.movie.Genre) return
+
+      const genre = this.movie.Genre.split(',')[0].trim()
+
+      const res = await fetch('https://www.omdbapi.com/?s=' + genre + '&apikey=' + API_KEY)
+
+      const data = await res.json()
+
+      if (data.Response === 'True') {
+
+        this.similarMovies = data.Search.filter(m => m.imdbID !== this.movie.imdbID).slice(0, 6)
 
       }
 
@@ -251,6 +314,12 @@ export default {
       this.showSharePopup = true
 
       setTimeout(() => { this.showSharePopup = false }, 2000)
+
+    },
+
+    goToMovie(id) {
+
+      this.$router.push('/detail/' + id)
 
     },
 
@@ -434,6 +503,64 @@ export default {
 .extra-info p { margin-bottom: 8px; color: #ccc; }
 
 .extra-info strong { color: white; }
+
+.similar-section {
+
+  position: relative;
+
+  z-index: 1;
+
+  padding: 0 40px 40px 40px;
+
+  max-width: 1100px;
+
+  margin: 0 auto;
+
+}
+
+.section-title { font-size: 22px; margin-bottom: 20px; color: white; }
+
+.similar-grid { display: flex; gap: 15px; flex-wrap: wrap; }
+
+.similar-card {
+
+  cursor: pointer;
+
+  width: 150px;
+
+  transition: transform 0.3s;
+
+}
+
+.similar-card:hover { transform: scale(1.05); }
+
+.similar-card img {
+
+  width: 150px;
+
+  height: 220px;
+
+  object-fit: cover;
+
+  border-radius: 8px;
+
+}
+
+.similar-card p {
+
+  font-size: 13px;
+
+  margin-top: 5px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+}
+
+.similar-year { color: #aaa; font-size: 12px; }
 
 .loading { text-align: center; padding: 100px; font-size: 20px; }
 
