@@ -4,6 +4,7 @@
     <div class="nav-links">
       <router-link to="/">Home</router-link>
       <router-link to="/kategorien">Kategorien</router-link>
+      <router-link to="/topten">🏆 Top 10</router-link>
       <router-link to="/favoriten">⭐ Favoriten</router-link>
       <router-link to="/watchlist">📋 Watchlist</router-link>
     </div>
