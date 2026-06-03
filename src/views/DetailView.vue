@@ -1,68 +1,83 @@
 <template>
-  <div class="detail" v-if="movie">
-    <div
+<div class="detail" v-if="movie">
+<div
       class="backdrop"
       :style="movie.Poster && movie.Poster !== 'N/A' ? { backgroundImage: 'url(' + movie.Poster + ')' } : {}"
-    ></div>
-    <div class="content">
-      <div class="poster-section">
-        <img
+></div>
+<div class="content">
+<div class="poster-section">
+<img
           :src="movie.Poster && movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/280x420?text=Kein+Bild'"
           :alt="movie.Title"
           class="poster"
         />
-        <div class="action-buttons">
-          <button @click="toggleFavorit" :class="['btn', isFavorit ? 'btn-active' : '']">
+<div class="action-buttons">
+<button @click="toggleFavorit" :class="['btn', isFavorit ? 'btn-active' : '']">
             ⭐ {{ isFavorit ? 'Aus Favoriten' : 'Favoriten' }}
-          </button>
-          <button @click="toggleWatchlist" :class="['btn', isWatchlist ? 'btn-active' : '']">
+</button>
+<button @click="toggleWatchlist" :class="['btn', isWatchlist ? 'btn-active' : '']">
             📋 {{ isWatchlist ? 'Aus Watchlist' : 'Watchlist' }}
-          </button>
-          <button @click="openTrailer" class="btn btn-trailer">
+</button>
+<button @click="openTrailer" class="btn btn-trailer">
             ▶ Trailer
-          </button>
-        </div>
-      </div>
-      <div class="info-section">
-        <h1>{{ movie.Title }}</h1>
-        <div class="meta">
-          <span class="year">{{ movie.Year }}</span>
-          <span class="runtime">{{ movie.Runtime }}</span>
-          <span class="rated">{{ movie.Rated }}</span>
-        </div>
-        <div class="genres">
-          <span
+</button>
+</div>
+</div>
+<div class="info-section">
+<h1>{{ movie.Title }}</h1>
+<div class="meta">
+<span class="year">{{ movie.Year }}</span>
+<span class="runtime">{{ movie.Runtime }}</span>
+<span class="rated">{{ movie.Rated }}</span>
+</div>
+<div class="genres">
+<span
             v-for="genre in movie.Genre ? movie.Genre.split(',') : []"
             :key="genre"
-            class="genre-badge" 
+            class="genre-badge"
             :style="{ backgroundColor: genreColor(genre.trim()) }"
-          >
+>
             {{ genre.trim() }}
-          </span>
-        </div>
-        <div class="rating">
-          <div class="stars">
-            <span
+</span>
+</div>
+<div class="rating">
+<div class="stars">
+<span
               v-for="n in 10"
               :key="n"
               :class="['star', n <= Math.round(parseFloat(movie.imdbRating)) ? 'filled' : '']"
-            >★</span>
-          </div>
-          <p class="rating-text">{{ movie.imdbRating }} / 10 (IMDb)</p>
-        </div>
+>★</span>
+</div>
+<p class="rating-text">{{ movie.imdbRating }} / 10 (IMDb)</p>
+</div>
+ 
+        <!-- Eigene Bewertung -->
+<div class="own-rating">
+<p>⭐ Deine Bewertung:</p>
+<div class="own-stars">
+<span
+              v-for="n in 5"
+              :key="n"
+              :class="['own-star', n <= ownRating ? 'filled' : '']"
+              @click="setOwnRating(n)"
+>★</span>
+</div>
+<p class="own-rating-text" v-if="ownRating > 0">Du hast {{ ownRating }}/5 Sterne gegeben</p>
+</div>
+ 
         <p class="plot">{{ movie.Plot }}</p>
-        <div class="extra-info">
-          <p><strong>Regisseur:</strong> {{ movie.Director }}</p>
-          <p><strong>Schauspieler:</strong> {{ movie.Actors }}</p>
-          <p><strong>Land:</strong> {{ movie.Country }}</p>
-          <p><strong>Sprache:</strong> {{ movie.Language }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div v-else class="loading">
-    <p>Film wird geladen...</p>
-  </div>
+<div class="extra-info">
+<p><strong>Regisseur:</strong> {{ movie.Director }}</p>
+<p><strong>Schauspieler:</strong> {{ movie.Actors }}</p>
+<p><strong>Land:</strong> {{ movie.Country }}</p>
+<p><strong>Sprache:</strong> {{ movie.Language }}</p>
+</div>
+</div>
+</div>
+</div>
+<div v-else class="loading">
+<p>Film wird geladen...</p>
+</div>
 </template>
  
 <script>
@@ -74,7 +89,8 @@ export default {
     return {
       movie: null,
       isFavorit: false,
-      isWatchlist: false
+      isWatchlist: false,
+      ownRating: 0
     }
   },
   mounted() {
@@ -88,6 +104,7 @@ export default {
       if (data.Response === 'True') {
         this.movie = data
         this.checkLists()
+        this.loadOwnRating()
       }
     },
     checkLists() {
@@ -95,6 +112,16 @@ export default {
       const watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]')
       this.isFavorit = favoriten.some(f => f.imdbID === this.movie.imdbID)
       this.isWatchlist = watchlist.some(w => w.imdbID === this.movie.imdbID)
+    },
+    loadOwnRating() {
+      const ratings = JSON.parse(localStorage.getItem('ownRatings') || '{}')
+      this.ownRating = ratings[this.movie.imdbID] || 0
+    },
+    setOwnRating(n) {
+      this.ownRating = n
+      const ratings = JSON.parse(localStorage.getItem('ownRatings') || '{}')
+      ratings[this.movie.imdbID] = n
+      localStorage.setItem('ownRatings', JSON.stringify(ratings))
     },
     toggleFavorit() {
       let favoriten = JSON.parse(localStorage.getItem('favoriten') || '[]')
@@ -179,7 +206,6 @@ export default {
   background: #333;
   color: white;
   text-align: center;
-  text-decoration: none;
 }
 .btn:hover { background: #555; }
 .btn-active { background: #e50914; }
@@ -195,11 +221,18 @@ export default {
   font-size: 13px;
   color: white;
 }
-.rating { margin-bottom: 20px; }
+.rating { margin-bottom: 15px; }
 .stars { display: flex; gap: 4px; font-size: 24px; }
 .star { color: #555; }
 .star.filled { color: #f5a623; }
 .rating-text { color: #aaa; margin-top: 5px; }
+.own-rating { margin-bottom: 20px; }
+.own-rating p { color: #aaa; margin-bottom: 8px; }
+.own-stars { display: flex; gap: 4px; font-size: 28px; cursor: pointer; }
+.own-star { color: #555; transition: color 0.2s; }
+.own-star.filled { color: #f5a623; }
+.own-star:hover { color: #f5a623; }
+.own-rating-text { color: #f5a623; margin-top: 5px; font-size: 14px; }
 .plot { font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #ddd; }
 .extra-info p { margin-bottom: 8px; color: #ccc; }
 .extra-info strong { color: white; }
