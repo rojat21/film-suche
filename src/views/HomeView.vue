@@ -1,41 +1,69 @@
 <template>
-  <div class="home">
-    <!-- Suchfeld -->
-    <div class="search-section">
-      <input
+<div class="home">
+<!-- Suchfeld -->
+<div class="search-section">
+<input
         v-model="searchQuery"
         @keyup.enter="searchMovies"
         type="text"
         placeholder="🔍 Film suchen..."
         class="search-input"
       />
-      <button @click="searchMovies" class="search-btn">Suchen</button>
-      <button @click="randomMovie" class="random-btn">🎲 Überrasch mich</button>
-    </div>
-
+<button @click="searchMovies" class="search-btn">Suchen</button>
+<button @click="randomMovie" class="random-btn">🎲 Überrasch mich</button>
+</div>
+ 
+    <!-- Carousel -->
+<div class="carousel-section" v-if="carouselMovies.length > 0">
+<div class="carousel">
+<button class="carousel-btn left" @click="prevSlide">&#8249;</button>
+<div class="carousel-track">
+<div class="carousel-slide">
+<img :src="carouselMovies[currentSlide].Poster" :alt="carouselMovies[currentSlide].Title" />
+<div class="carousel-info">
+<h2>{{ carouselMovies[currentSlide].Title }}</h2>
+<p>{{ carouselMovies[currentSlide].Year }} | {{ carouselMovies[currentSlide].Genre }}</p>
+<button @click="goToDetail(carouselMovies[currentSlide].imdbID)" class="carousel-detail-btn">
+                Mehr erfahren
+</button>
+</div>
+</div>
+</div>
+<button class="carousel-btn right" @click="nextSlide">&#8250;</button>
+</div>
+<div class="carousel-dots">
+<span
+          v-for="(movie, index) in carouselMovies"
+          :key="index"
+          :class="['dot', index === currentSlide ? 'active' : '']"
+          @click="currentSlide = index"
+></span>
+</div>
+</div>
+ 
     <!-- Suchergebnisse -->
-    <div v-if="searchResults.length > 0">
-      <h2 class="section-title">Suchergebnisse</h2>
-      <div class="movie-grid">
-        <MovieCard v-for="movie in searchResults" :key="movie.imdbID" :movie="movie" />
-      </div>
-    </div>
-
+<div v-if="searchResults.length > 0">
+<h2 class="section-title">Suchergebnisse</h2>
+<div class="movie-grid">
+<MovieCard v-for="movie in searchResults" :key="movie.imdbID" :movie="movie" />
+</div>
+</div>
+ 
     <!-- Beliebte Filme -->
-    <div v-if="searchResults.length === 0">
-      <h2 class="section-title">🔥 Beliebte Filme</h2>
-      <div class="movie-grid">
-        <MovieCard v-for="movie in popularMovies" :key="movie.imdbID" :movie="movie" />
-      </div>
-    </div>
-  </div>
+<div v-if="searchResults.length === 0">
+<h2 class="section-title">🔥 Beliebte Filme</h2>
+<div class="movie-grid">
+<MovieCard v-for="movie in popularMovies" :key="movie.imdbID" :movie="movie" />
+</div>
+</div>
+</div>
 </template>
-
+ 
 <script>
 import MovieCard from '../components/MovieCard.vue'
-
+ 
 const API_KEY = 'c7501fee'
-
+ 
 export default {
   name: 'HomeView',
   components: { MovieCard },
@@ -43,13 +71,33 @@ export default {
     return {
       searchQuery: '',
       searchResults: [],
-      popularMovies: []
+      popularMovies: [],
+      carouselMovies: [],
+      currentSlide: 0,
+      carouselTimer: null
     }
   },
   mounted() {
     this.loadPopularMovies()
+    this.loadCarouselMovies()
+  },
+  beforeUnmount() {
+    clearInterval(this.carouselTimer)
   },
   methods: {
+    async loadCarouselMovies() {
+      const titles = ['Inception', 'Interstellar', 'The Dark Knight', 'Avengers', 'Joker']
+      const results = []
+      for (const title of titles) {
+        const res = await fetch('https://www.omdbapi.com/?t=' + title + '&apikey=' + API_KEY)
+        const data = await res.json()
+        if (data.Response === 'True') results.push(data)
+      }
+      this.carouselMovies = results
+      this.carouselTimer = setInterval(() => {
+        this.nextSlide()
+      }, 4000)
+    },
     async loadPopularMovies() {
       const titles = [
         'Avengers', 'Inception', 'Interstellar', 'Batman', 'Spider-Man', 'Iron Man',
@@ -98,11 +146,20 @@ export default {
       if (data.Response === 'True') {
         this.$router.push('/detail/' + data.imdbID)
       }
+    },
+    nextSlide() {
+      this.currentSlide = (this.currentSlide + 1) % this.carouselMovies.length
+    },
+    prevSlide() {
+      this.currentSlide = (this.currentSlide - 1 + this.carouselMovies.length) % this.carouselMovies.length
+    },
+    goToDetail(id) {
+      this.$router.push('/detail/' + id)
     }
   }
 }
 </script>
-
+ 
 <style scoped>
 .home {
   padding: 30px;
@@ -148,6 +205,90 @@ export default {
 }
 .random-btn:hover {
   background: #555;
+}
+.carousel-section {
+  margin-bottom: 40px;
+}
+.carousel {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.carousel-track {
+  width: 100%;
+  height: 100%;
+}
+.carousel-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.5);
+}
+.carousel-info {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  color: white;
+}
+.carousel-info h2 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+.carousel-info p {
+  font-size: 16px;
+  color: #aaa;
+  margin-bottom: 15px;
+}
+.carousel-detail-btn {
+  padding: 10px 25px;
+  background: #e50914;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.carousel-detail-btn:hover {
+  background: #b20710;
+}
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  font-size: 40px;
+  padding: 10px 20px;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 8px;
+}
+.carousel-btn.left { left: 10px; }
+.carousel-btn.right { right: 10px; }
+.carousel-btn:hover { background: rgba(0,0,0,0.8); }
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #555;
+  cursor: pointer;
+}
+.dot.active {
+  background: #e50914;
 }
 .section-title {
   font-size: 22px;
