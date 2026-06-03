@@ -34,7 +34,7 @@
           <span
             v-for="genre in movie.Genre ? movie.Genre.split(',') : []"
             :key="genre"
-            class="genre-badge"
+            class="genre-badge" 
             :style="{ backgroundColor: genreColor(genre.trim()) }"
           >
             {{ genre.trim() }}
